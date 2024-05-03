@@ -113,6 +113,29 @@ class EloquentModelDateCastingTest extends DatabaseTestCase
         $this->assertArrayNotHasKey('immutable_date_field', $user->getDirty());
         $this->assertArrayNotHasKey('immutable_datetime_field', $user->getDirty());
     }
+
+    public function testParsedDatesHandleTimeZonesCorrectly()
+    {
+        $this->assertEquals('UTC', date_default_timezone_get());
+
+        $testModel = TestModel1::create([
+            'date_field' => '2019-10-01T00:00:00.000+08:00',
+            'datetime_field' => '2019-10-01T10:15:20.000+08:00',
+            'immutable_date_field' => '2019-10-01T00:00:00.000+08:00',
+            'immutable_datetime_field' => '2019-10-01T10:15:20.000+08:00',
+        ]);
+
+        $expected = [
+            'date_field' => '2019-09',
+            'datetime_field' => '2019-10 02:15',
+            'immutable_date_field' => '2019-09',
+            'immutable_datetime_field' => '2019-10 02:15',
+            'id' => 1,
+        ];
+
+        $this->assertSame($expected, $testModel->toArray());
+        $this->assertSame(json_encode($expected), $testModel->toJson());
+    }
 }
 
 class TestModel1 extends Model
