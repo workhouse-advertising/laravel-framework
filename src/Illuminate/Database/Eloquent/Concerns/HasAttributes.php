@@ -1495,7 +1495,7 @@ trait HasAttributes
             $date = false;
         }
 
-        return $date ?: Date::parse($value);
+        return $date ?: Date::parse($value)->setTimezone(date_default_timezone_get());
     }
 
     /**
