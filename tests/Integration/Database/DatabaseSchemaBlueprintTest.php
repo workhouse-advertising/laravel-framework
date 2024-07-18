@@ -312,17 +312,19 @@ class DatabaseSchemaBlueprintTest extends TestCase
             $table->timestamp('timestamp_col')->useCurrent();
             $table->integer('integer_col')->default(123);
             $table->string('string_col')->default('value');
+            $table->double('changed_col_with_default')->default(456);
         });
 
         $blueprint = new Blueprint('products', function ($table) {
             $table->text('changed_col')->change();
+            $table->double('changed_col_with_default', 18, 2)->change();
         });
 
         $queries = $blueprint->toSql(DB::connection(), new SQLiteGrammar);
 
         $expected = [
-            'create table "__temp__products" ("changed_col" text not null, "timestamp_col" datetime not null default CURRENT_TIMESTAMP, "integer_col" integer not null default \'123\', "string_col" varchar not null default \'value\')',
-            'insert into "__temp__products" ("changed_col", "timestamp_col", "integer_col", "string_col") select "changed_col", "timestamp_col", "integer_col", "string_col" from "products"',
+            'create table "__temp__products" ("changed_col" text not null, "timestamp_col" datetime not null default CURRENT_TIMESTAMP, "integer_col" integer not null default \'123\', "string_col" varchar not null default \'value\', "changed_col_with_default" double not null default \'456\')',
+            'insert into "__temp__products" ("changed_col", "timestamp_col", "integer_col", "string_col", "changed_col_with_default") select "changed_col", "timestamp_col", "integer_col", "string_col", "changed_col_with_default" from "products"',
             'drop table "products"',
             'alter table "__temp__products" rename to "products"',
         ];
